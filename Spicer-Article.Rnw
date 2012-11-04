@@ -1,5 +1,5 @@
 
-% Only one of the following lines should be used at a time.
+% Basic article class
 \documentclass[12pt]{article}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
