@@ -1,5 +1,5 @@
 
-% Basic article class
+% Basic article class as an example
 \documentclass[12pt]{article}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
