@@ -1,0 +1,145 @@
+%SourceDoc ../Spicer-Dissertation.Rnw
+\chapter{Using R and SWeave within RStudio} 
+\label{R and SWeave}
+
+\section{Working with \LaTeX{} documents}
+This document is not a tutorial in \LaTeX{}.  It merely attempts to demonstrate how you can use the PSUThesis and R's Sweave package with RStudio to produce your dissertation (and other types of publications).
+
+R includes a powerful package called \emph{Sweave} for creating dynamic reports and reproducible research using \LaTeX{}. Sweave enables the embedding of R code within \LaTeX{} documents to generate a PDF file that includes narrative and analysis, graphics, code, and the results of computations.
+
+\begin{singlespace}
+\begin{quote}
+Instead of inserting a prefabricated graph or table into the report, the master document contains the R code necessary to obtain it. When run through R, all data analysis output (tables, graphs, etc.) is created on the fly and inserted into a final latex document. The report can be automatically updated if data or analysis change, which allows for truly reproducible research.\cite{epubwu1788}
+\end{quote}
+\end{singlespace}
+
+If you use \LaTeX{}, you may have discovered that various statistical packages like SAS, Stata and R have commands that will format output in  for you to cut and paste into your .tex file \cite{HelpStatPack}.   For example, the \texttt{xtable} command in R.  With the Sweave package in RStudio you can put your code right in the document itself -- no cut and paste!  The code will execute and pass the output to your \LaTeX{} document.
+
+\section{PSUThesis Template}
+This document itself was produced with the PSUThesis template and can be downloaded from the PRI Help website (\url{http://help.pop.psu.edu}).  Unlike a typical \LaTeX{} document, the PSUThesis template has a complex directory structure with each chapter in a separate file.  \textbf{Do not alter this structure!}  At the root of the directory is a master file that will pull in the other files as required named \texttt{Spicer-Dissertation.Rnw}.  Chapters, figures, references and other supplementary materials appear in subfolders.  
+
+\section{Inserting Sweave R code chunks into your document}
+To include R commands within your thesis, select the appropriate chapter and change the file extention from \texttt{.tex} to \texttt{.Rnw}.  When you open a file with the \texttt{.Rnw} extension, it will be recognized as an Sweave document and the appropriate menus will be displayed to work with the file.   R code is placed inside Sweave environment in ``chunks'' begining with  $\ll$ $\gg=$ and ending with @.  The Sweave chunk header has a number of options including naming the chunk, hiding or displaying the R code and other options that pertain to specific output types.  In RStudio you can use the tab key within the $\ll$ $\gg=$ to get a list of the options.
+
+\begin{wrapfigure}[8]{r}{0.4\textwidth}
+  \vspace{-20pt}
+  \begin{center}
+    \includegraphics[width=0.38\textwidth]{Figures/esker.JPG}
+  \end{center}
+    \vspace{-20pt}
+  \caption{Esker (a cat)}
+\end{wrapfigure}
+
+I will load an R package and dataset from an Sweave chunk in this document using the Sweave options \texttt{$\ll$ echo=false, results=hide $\gg=$}.  The data is from a classic regression example by Venables \& Ripley (1997) \cite{Venables:1997fk}. The data frame contains measurements of heart and body weight of adult cats over 2 kg in body weight.
+
+% R setups
+<<echo=false,results=hide>>=
+library(xtable)
+data(cats, package="MASS")
+@ 
+
+\section{Displaying R code and output}
+A linear regression model of heart weight by body weight and gender was fitted in R.  The R code for the model and the raw results that were sent to the R console can automatically appear within the document by specifying \texttt{echo=TRUE} (which is the default if you do not use the echo option)
+
+<<model, echo=TRUE>>=
+lm1<-lm(Hwt~Bwt*Sex, data=cats)
+lm1
+@ 
+
+\section{Inserting R Code in the body of the text}
+
+R code is not limited to chunks, you can execute R statements within the text of your document using the \texttt{Sepxr} command. For example, I can have R calculate the number of cats in each gender and insert the results into this paragraph using the \texttt{Sexpr} function: There are \Sexpr{nrow(cats)} cats (\Sexpr{sum(cats$Sex=="F")} female,
+\Sexpr{sum(cats$Sex=="M")} male).    
+
+
+\section{Including Tables}
+
+Tests for significance of the coefficients are shown in
+Table~\ref{tab:coef}.  
+
+<<echo=FALSE,results=tex>>=
+xtable(lm1, caption="Linear regression model for cats data.", 
+label="tab:coef")
+@ 
+
+The table uses the \texttt{xtable} function, the R code chunk specifies the \texttt{results=tex} option to indicate that the output from the R code will already be formatted in \LaTeX{}.  The xtable command can be used like the Stata latabstat command to produce \LaTeX{} code to cut-and-paste into a document. However, if you use \texttt{xtable} with SWeave, the results will be pulled into your document auto-magically!   
+
+Notice that \texttt{xtable} can insert a label that will be recognized in your document's List of Tables. 
+
+\section{Including graphics}
+
+A scatter plot including the regression lines is
+shown in Figure~\ref{fig:cats}.
+
+\begin{figure}[h]
+\begin{center}
+<<fig=TRUE, echo=FALSE, height=3, width=6>>=
+library(MASS)
+require(ggplot2)
+ggplot(cats, aes(Bwt, Hwt))+
+  geom_point()+
+  stat_smooth()+
+  facet_wrap(~Sex)       
+@
+  \caption{The cats data from package MASS.}
+  \label{fig:cats}
+\end{center}  
+\end{figure}
+
+The \texttt{echo=FALSE} option was used to suppress the display of the R code that produced the figure.  Notice that the caption and label are created using \LaTeX{} rather than within R.  This allows for the figure to be referenced in the List of Figures at the beginning of the document. 
+
+
+\section{Running R chunks}
+
+When you compile your document to PDF the R code will run, but you will notice that it does \textbf{not} run in your current workspace.  If you are still debugging your code you will want to be able to view the objects and dataframes and see output in the console.   You can execute the code as though it was in a stand-alone R script by using the `Chunks' menu.
+
+\section{Running R scripts}
+As an alternative to inserting R code chunks, you can call existing R script files into your document using the \verb|\SweaveInput| command.  This is particularly useful for code to setup your data file or run preliminary analyses that do not produced tables or figures.
+
+\section{A few \LaTeX{} tips}
+RStudio is not a full-blown \LaTeX{} editor, but it does have a few nice features to make your editing more enjoyable including:
+\begin{itemize}
+  \item A \textbf{spell check} function that can ``learn'' new words
+  \item A \textbf{format menu} to insert the \LaTeX{} for things like sections, bulleted lists, quotes, bold.    
+\end{itemize}
+
+Bibtex files can be used for your references.  Bibtex allows the effortless addition of references and bibliography to your document.  Check out the BibTex site\cite{bibtex} or google ``bibtex'' for more information.   This document utilizes a large bibtex database file, but only the 3 references cited appear in the bibliography.
+
+
+
+\section{Math}
+
+To type equation in Latex, use the equation environment.
+
+\begin{equation}
+     \label{simple_equation}
+ SD_{wy} = \sqrt{\dfrac{\sum(y_i-\bar{y}{_w})^2 w_i}{\sum w_i -1}}
+\end{equation}
+
+If you want your formula (or elements of a formula) to appear in the line of a text. Use a single \$ to begin and end the formula, such as \label{sympi} $\pi = 3.14$
+
+Of course with R you can use what you know about \LaTeX{} equations to insert math directly in your plot. In this code chunk the title is a fixed equation but the $\bar(x),\bar(y)$ axis labels will be dynamically constructed as the code is evaluated. To generate the data, I am calling in an R script stored in another file using the \texttt{SweaveInput}.
+statement.
+
+<<rprogram1,echo=FALSE>>=
+\SweaveInput{../Rscripts/Rprogram1.R}
+@
+
+\begin{figure}[htbp]
+\begin{center}
+<<fig=TRUE, echo=TRUE, height=4, width=5>>=
+plot(x, y,
+     xlab=substitute(bar(x) == k, list(k=mean(x))),
+     ylab=substitute(bar(y) == k, list(k=mean(y))),
+     main = expression("The mean (" * bar(x) * ") is " *
+                     sum(x[i]/n,i==1,n)))
+@
+  \caption{Plotting with static and dynamic math}
+  \label{fig:mathplot}
+\end{center}
+\end{figure}
+
+
+\section{Conclusion}
+Yes, there is a lot of material here! But when you consider how much time you will be spending on your dissertation over the next few years, the investment in learning R/Sweave with RStudio can really pay off.
+

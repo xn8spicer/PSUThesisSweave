@@ -1,0 +1,29 @@
+\Appendix{Sweave Code Samples}
+\begin{singlespace}
+Here is a code chunk that loads all the R packages required for our sample dissertation. The code chunk will not echo the R commands nor will it display any of the messages you would normally see in the console window.
+
+\begin{verbatim}
+  <<echo=false, results=hide>>=
+  library(xtable)
+  library(ggplot2)
+  library(MASS)
+  @
+\end{verbatim}
+
+The figure chunk shown here is wrapped by \LaTeX{}.  The commands work together to size and position and label the graph.
+
+\begin{verbatim}
+  \begin{figure}[h]
+   \begin{center}
+    <<fig=TRUE, echo=FALSE, height=3, width=6>>=
+      ggplot(cats, aes(Bwt, Hwt))+
+       geom_point()+
+       stat_smooth()+
+       facet_wrap(~Sex)       
+    @
+    \caption{The cats data from package MASS.}
+    \label{fig:cats}
+   \end{center}  
+  \end{figure}
+\end{verbatim}
+\end{singlespace}
